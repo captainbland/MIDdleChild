@@ -2,19 +2,26 @@ package middlechild.server;
 
 import javax.sound.midi.*;
 
+
 import java.net.*;
 import java.io.*;
 import java.util.*;
+import java.util.concurrent.*;
 public class Server {
+	
+
+		
+	
+	
 	public static void main(String... args) throws InvalidMidiDataException {
 		Sequencer sequencer;
 		Sequence sequence;
-		ArrayList<Socket> connections; 
+		List<Socket> connections; 
 		ServerSocket server;
 		
 		
 		try {
-            File input = new File("test.mid");
+            File input = new File("track.mid");
             sequence = MidiSystem.getSequence(input);
 
             server = new ServerSocket(25556);
@@ -24,14 +31,14 @@ public class Server {
             
             finderRunner.start();
             
+
             while(cfinder.getConnectionsList().size() == 0) {
-            	//wait for somebody to join...
+            	System.out.println(cfinder.getConnectionsList().size());
             }
             
-            //start streaming!
-            for(Socket skt : cfinder.getConnectionsList()) {
-            	
-            }
+            connections = cfinder.getConnectionsList();
+            
+            MidiStreamer midstream = new MidiStreamer(connections, sequence);            
             
             
 		} catch (InvalidMidiDataException e) {
@@ -44,7 +51,7 @@ public class Server {
 	}
 	
 	public static class ConnectionFinder implements Runnable{
-		ArrayList<Socket> connections;	
+		List<Socket> connections= new ArrayList<Socket>();
 		ServerSocket serv;
 		
 		public ConnectionFinder(ServerSocket serv) {
@@ -52,7 +59,7 @@ public class Server {
 		}
 		
 		boolean quit = false;
-	    public void waitForConnections() throws IOException {
+	    public synchronized void waitForConnections() throws IOException {
 	    	while(!quit) {
 	    		//accept connections
 	    		System.out.println("Looking...");
@@ -79,13 +86,12 @@ public class Server {
 	    	quit = true;
 	    }
 	    
-	    public ArrayList<Socket> getConnectionsList() {
+	    public List<Socket> getConnectionsList() {
 	    	return connections;
 	    }
 
 		@Override
 		public void run() {
-			this.connections = new ArrayList<Socket>();
 
 			try {
 				waitForConnections();

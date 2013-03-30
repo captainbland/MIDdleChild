@@ -93,6 +93,8 @@ public class Client {
 				tstr = tstr.substring(0,len);
 				System.out.println("RECEIVED: " + tstr);
 			}
+			//skt.close();
+
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
